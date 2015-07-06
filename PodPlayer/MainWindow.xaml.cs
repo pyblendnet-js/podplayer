@@ -14,6 +14,8 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.IO;
 using System.Windows.Interop;
+using System.Windows.Forms;  //for file dialog
+
 
 namespace PodPlayer
 {
@@ -44,7 +46,8 @@ namespace PodPlayer
         private bool stopAtNext = false;
 
         private Window1 configWindow;
-
+        private OpenFileDialog fileDialog = null;
+        private bool ignorMove = false;
         public MainWindow()
         {
             InitializeComponent();
@@ -100,7 +103,7 @@ namespace PodPlayer
             for (int i = 0; i < wplayer.currentPlaylist.count - 1; i++)
             {
                 if (wplayer.controls.currentItem.sourceURL == wplayer.currentPlaylist.get_Item(i).sourceURL)
-                {   
+                {
                     for (int j = i + 1; j < wplayer.currentPlaylist.count - 1; j++)
                     {
                         wplayer.currentPlaylist.removeItem(wplayer.currentPlaylist.get_Item(j));
@@ -152,7 +155,9 @@ namespace PodPlayer
 
         private void showConfig(Object obj, RoutedEventArgs e)
         {
+            ignorMove = true;
             configWindow.Show();
+            configWindow.Focus();
         }
 
         private void windowLoaded(object sender, RoutedEventArgs e)
@@ -171,6 +176,37 @@ namespace PodPlayer
             else
                 toggleMusic();
         }
+
+        private void mouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (!ignorMove)
+                this.Focus();
+        }
+
+        private void selectSong(object sender, MouseButtonEventArgs e)
+        {
+            ignorMove = true;
+            int i = getIndexOfCurrent();
+            fileDialog = new OpenFileDialog();
+            if (wakeupSongs.Contains(wplayer.URL))
+                fileDialog.InitialDirectory = System.IO.Path.GetDirectoryName(wplayer.URL);
+            else
+                fileDialog.InitialDirectory = configWindow.podPathTextBox.Text;
+            DialogResult result = fileDialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK) // Test result.
+            {
+                if(i < 0)
+                    wplayer.URL = fileDialog.FileName;
+                else
+                    wplayer.currentPlaylist.insertItem(i+1, wplayer.newMedia(fileDialog.FileName));
+                if (sender == statusLbl)
+                    recordPodsHeard(wplayer.currentMedia.sourceURL, "SKIPPED_AT=" + wplayer.controls.currentPosition.ToString("F0") + "Sec");
+                wplayer.controls.next();
+                    }
+            Console.WriteLine(result);
+            ignorMove = false;
+        }
+
 
         private void togglePlay()
         {
@@ -199,7 +235,7 @@ namespace PodPlayer
             }
         }
 
-        private void keyPressed(object sender, KeyEventArgs e)
+        private void keyPressed(object sender, System.Windows.Input.KeyEventArgs e)
         {
             switch (e.Key)
             {
@@ -350,17 +386,19 @@ namespace PodPlayer
                     {
                         if (tn.Length > 1)
                         {
-                            if(tn[1].Length == 15) {
-                                DateTime lh = DateTime.ParseExact(tn[1],"yyyyMMdd_hhmmdd",null);
+                            if (tn[1].Length == 15)
+                            {
+                                DateTime lh = DateTime.ParseExact(tn[1], "yyyyMMdd_HHmmss", null);
                                 TimeSpan ld = (DateTime.Now - lh);
-                                if(ld.TotalDays >= 2.0)
+                                if (ld.TotalDays >= 2.0)
                                     lastHeard = ld.TotalDays.ToString("F0") + "days since heard";
-                                else if(ld.TotalHours >= 1.0)
+                                else if (ld.TotalHours >= 1.0)
                                     lastHeard = ld.TotalHours.ToString("F0") + "hours since heard";
                                 else
                                     lastHeard = ld.TotalMinutes.ToString("F0") + "minutes since heard";
                             }
-                            else { 
+                            else
+                            {
                                 lastHeard = tn[1];
                             }
                         }
@@ -413,23 +451,30 @@ namespace PodPlayer
                 clockDial.Foreground = Brushes.Blue;
         }
 
-        private void updateNext()
+        private int getIndexOfCurrent()
         {
-            string status_str = "End of play list";  // assume end of list
-            nextMediaLbl.Foreground = Brushes.Red;
             for (int i = 0; i < wplayer.currentPlaylist.count - 1; i++)
             {
                 String urli = wplayer.currentPlaylist.get_Item(i).sourceURL;
                 if (wplayer.controls.currentItem.sourceURL == urli)
-                {
-                    String urli1 = wplayer.currentPlaylist.get_Item(i + 1).sourceURL;
-                    status_str = wplayer.currentPlaylist.get_Item(i + 1).name;
-                    if (wakeupSongs.Contains(urli1))
-                        nextMediaLbl.Foreground = Brushes.Green;
-                    else
-                        nextMediaLbl.Foreground = Brushes.Blue;
-                    break;
-                }
+                    return i;
+            }
+            return -1;
+        }
+
+        private void updateNext()
+        {
+            string status_str = "End of play list";  // assume end of list
+            nextMediaLbl.Foreground = Brushes.Red;
+            int i = getIndexOfCurrent();
+            if (i >= 0)
+            {
+                String urli1 = wplayer.currentPlaylist.get_Item(i + 1).sourceURL;
+                status_str = wplayer.currentPlaylist.get_Item(i + 1).name;
+                if (wakeupSongs.Contains(urli1))
+                    nextMediaLbl.Foreground = Brushes.Green;
+                else
+                    nextMediaLbl.Foreground = Brushes.Blue;
             }
             playlistStatsLbl.Content = podsFoundCount.ToString() + " pod files, " + podsHeardCount + " heard";
             if (!stopAtNext)
@@ -533,7 +578,7 @@ namespace PodPlayer
 
         private void recordPodsHeard(string fid, string suffix = "")
         {
-            String rec_str = fid + "," + DateTime.Now.ToString("yyyyMMdd_hhmmdd") + "," + suffix;
+            String rec_str = fid + "," + DateTime.Now.ToString("yyyyMMdd_HHmmss") + "," + suffix;
             podsHeard.Add(rec_str);
             try
             {

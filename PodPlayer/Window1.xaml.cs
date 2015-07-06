@@ -11,6 +11,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.IO;
+using System.Windows.Forms;
+using System.ComponentModel; // CancelEventArgs
+
 
 namespace PodPlayer
 {
@@ -27,6 +30,11 @@ namespace PodPlayer
             loadConfig();
         }
 
+        private void windowClosing(Object sender, CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Visibility = Visibility.Hidden;
+        }
 
         private void loadConfig()
         {
@@ -98,6 +106,30 @@ namespace PodPlayer
         private void saveConfig(Object obj, RoutedEventArgs e)
         {
             saveConfig();
+        }
+
+        void findFile(Object obj, System.Windows.Input.MouseEventArgs e)
+        {
+                        OpenFileDialog fileDialog = new OpenFileDialog();
+                fileDialog.InitialDirectory = System.IO.Path.GetDirectoryName(songListPathTextBox.Text);
+            DialogResult result = fileDialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK) // Test result.
+            {
+                    songListPathTextBox.Text = fileDialog.FileName;
+            }
+            Console.WriteLine(result);
+        }
+
+        void findPath(Object obj, System.Windows.Input.MouseEventArgs e)
+        {
+            FolderBrowserDialog pathDialog = new FolderBrowserDialog();
+                pathDialog.SelectedPath = podPathTextBox.Text;
+             DialogResult result = pathDialog.ShowDialog();
+             if (result == System.Windows.Forms.DialogResult.OK) // Test result.
+             {
+                 podPathTextBox.Text = pathDialog.SelectedPath;
+                 Console.WriteLine(result);
+             }
         }
     }
 }
