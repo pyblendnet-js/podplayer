@@ -1,42 +1,20 @@
 ﻿<Window x:Class="PodPlayer.Window1"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="PodPalyerConfig" Height="278" Width="800" KeyUp="keyPressed" Closing="windowClosing">
-    <StackPanel Height="233">
-        <StackPanel Orientation="Horizontal">
-            <TextBox Margin="10" Height="25"  Name="fadeInSpeedTextBox"  Width="40" Text="10"/>
-            <Label Content="fadeInSpeed%" Height="25"  Name="label1"  />
-            <CheckBox Margin="10" Content="Play music between podcasts" Height="24" HorizontalAlignment="Left" Name="altMusicCheckBox"  Width="184" IsChecked="True" />
-            <Button Margin="10" Width="100" Content="Set hotkeys"  Name="setKeyBtn"  ToolTip="Set the keys to perform actions" Click="setKeys"/>
-        </StackPanel>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="40" />
-                <RowDefinition Height="40" />
-                <RowDefinition Height="40" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="150" />
-                <ColumnDefinition />
-                <ColumnDefinition Width="60" />
-            </Grid.ColumnDefinitions>
-            <Label Grid.Row="0" Grid.Column="0" Content="PodFile Path:" Height="29"  Name="podPathLabel"  Width="97" MouseUp="findPath"/>
-            <TextBox Grid.Row="0" Grid.Column="1" Margin="5 "  Name="podPathTextBox" Text=""  />
-            <Button Grid.Row="0" Grid.Column="2" Content="Browse" Height="23"   Name="browseBtn1" Width="50" Click="findPath"/>
-            <Label Grid.Row="1" Grid.Column="0" Content="WakeSongList Playlist:" Height="27" Name="wakeSongListLbl" Width="130" MouseUp="findFile"/>
-            <TextBox Grid.Row="1" Grid.Column="1" Margin="5"  Name="wakeSongListPathTextBox" Text="" />
-            <Button Grid.Row="1" Grid.Column="2" Content="Browse" Height="23" Name="browseBtn2" Width="50" Click="findFile"/>
-            <Label Grid.Row="2" Grid.Column="0" Content="SongList Playlist:" Height="27" Name="songListLbl" Width="97" MouseUp="findFile"/>
-            <TextBox Grid.Row="2" Grid.Column="1" Margin="5" Name="songListPathTextBox" Text="" />
-            <Button Grid.Row="2" Grid.Column="2" Content="Browse" Height="23" Name="browseBtn3"  Width="50" Click="findFile"/>
-        </Grid>
-        <StackPanel Orientation="Horizontal" Height="50" >
-            <Button Margin="10" Content="Save podcasts heard which exist"  Name="saveHeardBtn"  ToolTip="Removes those from list which are nolong stored locally" Click="resaveHeard"/>
-            <Button Margin="10" Content="Delete pods marked DELETE"  Name="button2" Width="185" Click="deleteDelete"/>
-            <Button Margin="10" Name="reviewBtn"  Width="185" Click="reviewPodsHeard">
-                <TextBlock><Underline><Bold>R</Bold></Underline>eview pods heard</TextBlock>
-            </Button>
-            <Button Margin="10" Content="SaveConfig"  Name="button1" Width="150" Click="saveConfig"/>
-        </StackPanel>
-    </StackPanel>
+        Title="PodPalyerConfig" Height="300" Width="478" Closing="windowClosing">
+    <Grid>
+        <CheckBox Content="Play Alt Music" Height="24" HorizontalAlignment="Left" Margin="0,0,0,0" Name="altMusicCheckBox" VerticalAlignment="Bottom" Width="100" IsChecked="True" />
+        <Button Content="Save podcasts heard which exist" Height="25" HorizontalAlignment="Left" Margin="54,0,0,30" Name="saveHeardBtn" VerticalAlignment="Bottom" Width="185" ToolTip="Removes those from list which are nolong stored locally" Click="resaveHeard"/>
+        <TextBox Height="25" HorizontalAlignment="Left" Margin="120,40,0,0" Name="fadeInSpeedTextBox" VerticalAlignment="Top" Width="40" Text="10"/>
+        <Label Content="fadeInSpeed%" Height="25" HorizontalAlignment="Left" Margin="10,40,0,0" Name="label1" VerticalAlignment="Top" Width="111" />
+        <Button Content="SaveConfig" Height="23" HorizontalAlignment="Left" Margin="10,8,0,0" Name="button1" VerticalAlignment="Top" Width="148" Click="saveConfig"/>
+        <Label Content="PodFile Path:" Height="29" HorizontalAlignment="Left" Margin="11,70,0,0" Name="podPathLabel" VerticalAlignment="Top" Width="97" MouseUp="findPath"/>
+        <TextBox Height="27" Margin="110,70,70,0" Name="podPathTextBox" Text="" VerticalAlignment="Top" />
+        <Button Content="Browse" Height="23" HorizontalAlignment="Right" Margin="0,70,10,0" Name="browseBtn1" VerticalAlignment="Top" Width="50" Click="findPath"/>
+        <Label Content="SongList Playlist:" Height="27" HorizontalAlignment="Left" Margin="11,100,0,0" Name="songListLbl" VerticalAlignment="Top" Width="97" MouseUp="findFile"/>
+        <TextBox Height="27" Margin="110,100,70,0" Name="songListPathTextBox" Text="" VerticalAlignment="Top" />
+        <Button Content="Browse" Height="23" HorizontalAlignment="Right" Margin="0,100,10,0" Name="browseBtn2" VerticalAlignment="Top" Width="50" Click="findFile"/>
+        <Button Content="Delete pods marked DELETE" Height="25" HorizontalAlignment="Left" Margin="54,140,0,0" Name="button2" VerticalAlignment="Top" Width="185" Click="deleteDelete"/>
+        <Button Content="Review pods heard" Height="25" HorizontalAlignment="Left" Margin="54,170,0,0" Name="reviewBtn" VerticalAlignment="Top" Width="185" Click="reviewPodsHeard"/>
+    </Grid>
 </Window>

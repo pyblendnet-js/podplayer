@@ -23,10 +23,8 @@ namespace PodPlayer
     public partial class Window1 : Window
     {
         MainWindow playWindow;
-        protected Window2 heardWindow = null;
-        protected Window3 keyWindow = null;
+        private Window2 heardWindow = null;
         public bool closeReally = false;
-        private char[] argSeperator = "=".ToArray<char>();
 
         public Window1(MainWindow parent)
         {
@@ -49,11 +47,6 @@ namespace PodPlayer
                 heardWindow.Close();
                 heardWindow = null;
             }
-            if (keyWindow != null)
-            {
-                keyWindow.Close();
-                keyWindow = null;
-            }
         }
 
         private void loadConfig()
@@ -68,28 +61,24 @@ namespace PodPlayer
                 {
                     while ((cfl = sr.ReadLine()) != null)
                     {
-                        String[] vs = cfl.Split(argSeperator);
+                        String[] vs = cfl.Split();
                         if (vs.Length != 2)
                             System.Windows.MessageBox.Show("ERROR Config line:" + cfl);
                         try
                         {
-                            string arg = vs[1].Trim();
-                            switch (vs[0].Trim())
+                            switch (vs[0])
                             {
                                 case "alt_song":
-                                    altMusicCheckBox.IsChecked = arg.ToLower().Equals("true");
+                                    altMusicCheckBox.IsChecked = vs[1].ToLower().Equals("true");
                                     break;
                                 case "fade_in":
-                                    fadeInSpeedTextBox.Text = arg;
+                                    fadeInSpeedTextBox.Text = vs[1];
                                     break;
                                 case "pod_path":
-                                    podPathTextBox.Text = arg;
+                                    podPathTextBox.Text = vs[1];
                                     break;
                                 case "songlist_path":
-                                    songListPathTextBox.Text = arg;
-                                    break;
-                                case "wake_songlist_path":
-                                    wakeSongListPathTextBox.Text = arg;
+                                    songListPathTextBox.Text = vs[1];
                                     break;
                             }
                         }
@@ -110,13 +99,13 @@ namespace PodPlayer
         {
             try
             {
+                // Write each directory name to a file. 
                 using (StreamWriter sw = new StreamWriter("podPlayer.cfg", false))  //do not append
                 {
-                    sw.WriteLine("alt_song = " + altMusicCheckBox.IsChecked.ToString());
-                    sw.WriteLine("fade_in = " + fadeInSpeedTextBox.Text);
-                    sw.WriteLine("pod_path = " + podPathTextBox.Text);
-                    sw.WriteLine("songlist_path = " + songListPathTextBox.Text);
-                    sw.WriteLine("wake_songlist_path = " + wakeSongListPathTextBox.Text);
+                    sw.WriteLine("alt_song " + altMusicCheckBox.IsChecked.ToString());
+                    sw.WriteLine("fade_in " + fadeInSpeedTextBox.Text);
+                    sw.WriteLine("pod_path " + podPathTextBox.Text);
+                    sw.WriteLine("songlist_path" + songListPathTextBox.Text);
                 }
             }
             catch (Exception ec)
@@ -125,18 +114,6 @@ namespace PodPlayer
             }
         }
 
-        private void keyPressed(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            switch (e.Key)
-            {
-                case Key.Escape:
-                    this.Close();
-                    break;
-                case Key.R:
-                    reviewPodsHeard(null, null);
-                    break;
-            }
-        }
 
 
         private void saveConfig(Object obj, RoutedEventArgs e)
@@ -146,25 +123,20 @@ namespace PodPlayer
 
         void findFile(Object obj, System.Windows.RoutedEventArgs e)
         {
-            findFile(obj == wakeSongListLbl);
+            findFile();
         }
-
         void findFile(Object obj, System.Windows.Input.MouseEventArgs e)
         {
-            findFile(obj == browseBtn2);
+            findFile();
         }
-
-        void findFile(bool watch_list)
+        void findFile()
         {
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.InitialDirectory = System.IO.Path.GetDirectoryName(songListPathTextBox.Text);
             DialogResult result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK) // Test result.
             {
-                if(watch_list)
-                    wakeSongListPathTextBox.Text = fileDialog.FileName;
-                else
-                    songListPathTextBox.Text = fileDialog.FileName;
+                songListPathTextBox.Text = fileDialog.FileName;
             }
             Console.WriteLine(result);
         }
@@ -202,20 +174,9 @@ namespace PodPlayer
 
         void reviewPodsHeard(Object obj, RoutedEventArgs e)
         {
-            //if(heardWindow == null)
-              heardWindow = new Window2(this, playWindow);
-            //heardWindow.Show();
-              heardWindow.ShowDialog();
-              heardWindow.Focus();
+            heardWindow = new Window2(this, playWindow);
+            heardWindow.Show();
         }
 
-        void setKeys(Object obj, RoutedEventArgs e)
-        {
-            //if(heardWindow == null)
-            keyWindow = new Window3(this, playWindow);
-            //heardWindow.Show();
-            keyWindow.ShowDialog();
-            keyWindow.Focus();
-        }
     }
 }
