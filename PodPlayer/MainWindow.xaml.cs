@@ -33,6 +33,7 @@ namespace PodPlayer
         private Random rand;
         const int MAX_REPEATS = 3;
         private bool lastMediaHeard;
+        private int volume;
 
         public MainWindow()
         {
@@ -43,8 +44,10 @@ namespace PodPlayer
             loadPods();
             podMode = false;
             lastMediaHeard = false;
+            volume = 100;
 
             wplayer = new WMPLib.WindowsMediaPlayer();
+            wplayer.settings.volume = 20;
             if (wakeupSongs.Count > 0)
                 wplayer.URL = wakeupSongs[rand.Next(wakeupSongs.Count)];
             else
@@ -132,6 +135,25 @@ namespace PodPlayer
                         wplayer.controls.next();
                     }
                     break;
+                case Key.Up:
+                    if (volume < 50)
+                        volume += 1;
+                    else if (volume < 100)
+                        volume += 5;
+                    wplayer.settings.volume = volume;
+                    volLbl.Content = "Volume = " + volume;
+                    volLbl.Opacity = 1.0;
+                    break;
+                case Key.Down:
+                    if (volume > 50)
+                        volume -= 5;
+                    else if (volume > 10)
+                        volume -= 1;
+                    if (wplayer.settings.volume > volume)
+                        wplayer.settings.volume = volume;
+                    volLbl.Content = "Volume = " + wplayer.settings.volume;
+                    volLbl.Opacity = 1.0;
+                    break;
             }
         }
 
@@ -146,10 +168,15 @@ namespace PodPlayer
             progressBkgRect.Height = progressRect.Height;
             remainderLbl.Height = progressRect.Height;
             remainderLbl.FontSize = progressRect.Height * 0.8;
+            volLbl.Height = this.ActualHeight * 0.1;
+            volLbl.Margin = new Thickness(20, progressRect.Margin.Top + progressRect.Height + 20, 20, 0);
+            volLbl.FontSize = volLbl.Height * 0.6;
             double y = statusLbl.Height + progressRect.Height + 20;
             clockDial.Height = this.ActualHeight - y - saveHeardBtn.Height;
             clockDial.Width = this.ActualWidth - 40;
             clockDial.FontSize = clockDial.Height * 0.6;
+            nextMediaLbl.Height = this.ActualHeight * 0.06;
+            nextMediaLbl.FontSize = nextMediaLbl.Height * 0.6;
             fixLayoutPending = false;
         }
 
@@ -165,12 +192,35 @@ namespace PodPlayer
                     recordPodsHeard(lastMediaURL);
                 }
             }
-            lastMediaURL = wplayer.currentMedia.sourceURL;
-            string status_str = wplayer.playState.ToString().Substring(5) + ":" + wplayer.currentMedia.name + " = " + wplayer.currentMedia.duration.ToString("F0") + " Sec";
-            statusLbl.Content = status_str;
-            statusLbl.FontSize = statusLbl.ActualWidth/status_str.Length*2;
-            if (statusLbl.FontSize > statusLbl.ActualHeight * 0.6)
-                statusLbl.FontSize = statusLbl.ActualHeight * 0.6;
+            if (lastMediaURL != wplayer.currentMedia.sourceURL)
+            {
+                lastMediaURL = wplayer.currentMedia.sourceURL;
+                string status_str = wplayer.playState.ToString().Substring(5) + ":" + wplayer.currentMedia.name + " = " + wplayer.currentMedia.duration.ToString("F0") + " Sec";
+                statusLbl.Content = status_str;
+                statusLbl.FontSize = statusLbl.ActualWidth / status_str.Length * 2;
+                if (statusLbl.FontSize > statusLbl.ActualHeight * 0.6)
+                    statusLbl.FontSize = statusLbl.ActualHeight * 0.6;
+                status_str = "End of play list";  // assume end of list
+                for (int i = 0; i < wplayer.currentPlaylist.count - 1; i++)
+                {
+                    if (wplayer.controls.currentItem.sourceURL == wplayer.currentPlaylist.get_Item(i).sourceURL)
+                        status_str = wplayer.currentPlaylist.get_Item(i + 1).name;
+                }
+                nextMediaLbl.Content = status_str;
+                nextMediaLbl.FontSize = nextMediaLbl.ActualWidth / status_str.Length * 2;
+                if (nextMediaLbl.FontSize > nextMediaLbl.ActualHeight * 0.6)
+                    nextMediaLbl.FontSize = nextMediaLbl.ActualHeight * 0.6;
+            }
+            if (wplayer.settings.volume < volume)
+            {
+                wplayer.settings.volume += 1;
+                volLbl.Content = "Volume = " + wplayer.settings.volume.ToString();
+                volLbl.Opacity = 1.0;
+            }
+            else if (volLbl.Opacity > 0.0)
+            {
+                volLbl.Opacity -= 0.1;
+            }
             Double rem_sec = wplayer.currentMedia.duration - wplayer.controls.currentPosition;
             lastMediaHeard = (rem_sec < 2);
             remainderLbl.Content = rem_sec.ToString("F0") + " Sec";
@@ -226,9 +276,9 @@ namespace PodPlayer
                     {
                         String tn = ph;
                         if (ph.EndsWith("***DELETE"))
-                          tn = ph.Substring(0, ph.Length - 9);
-                        if (File.Exists(tn)) 
-                          podsHeard.Add(ph);  // leave suffix
+                            tn = ph.Substring(0, ph.Length - 9);
+                        if (File.Exists(tn))
+                            podsHeard.Add(ph);  // leave suffix
                     }
                 }
             }
@@ -268,8 +318,8 @@ namespace PodPlayer
                         String tn = ph;
                         if (ph.EndsWith("***DELETE"))
                             tn = ph.Substring(0, ph.Length - 9);
-                        if(File.Exists(tn))
-                          sw.WriteLine(ph);  //leave suffix
+                        if (File.Exists(tn))
+                            sw.WriteLine(ph);  //leave suffix
                     }
                 }
             }
