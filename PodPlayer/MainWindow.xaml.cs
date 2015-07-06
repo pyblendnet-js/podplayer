@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.IO;
+using System.Windows.Interop;
 
 namespace PodPlayer
 {
@@ -85,6 +86,8 @@ namespace PodPlayer
         {
             //this.KeyDown += new KeyEventHandler(keyPressed);
             fixLayout();
+        //    IntPtr wh = new WindowInteropHelper(this).Handle;
+        //    SendMessage(wh, WM_SYSCOMMAND, (IntPtr)SC_MONITORPOWER, (IntPtr)MONITOR_OFF);
         }
 
         private void mouseDown(object sender, MouseButtonEventArgs e)
