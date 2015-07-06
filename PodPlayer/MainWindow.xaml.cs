@@ -51,12 +51,19 @@ namespace PodPlayer
         private Window1 configWindow;
         private OpenFileDialog fileDialog = null;
         private bool ignorMove = false;
+
+        private bool playingSample = false;  //can be interupted
+        public String[] actionList = { "Exit", "Pause", "Full Screen", "Fast Forward", "Restart", "Next", "Delete", "Keep", "Configure", "Vol+", "Vol-" };
+        private KeyActionClass keyAction;
+        protected keySelectWindow keyWindow = null;
+
         public MainWindow()
         {
             InitializeComponent();
+            keyAction = new KeyActionClass("keyconfig.txt", actionList);
 
-            configWindow = new Window1(this);
-
+            configWindow = new Window1(this, keyAction);
+            keyAction = configWindow.keyAction;
             rand = new Random(DateTime.Now.Millisecond);
         }
 
@@ -126,6 +133,11 @@ namespace PodPlayer
             if (configWindow != null)
                 configWindow.closeReally = true;
             configWindow.Close();
+            if (keyWindow != null)
+            {
+                keyWindow.Close();
+                keyWindow = null;
+            }
         }
 
         private void queueMedia(bool music_only = false)
@@ -190,16 +202,15 @@ namespace PodPlayer
         private void showConfig(Object obj, RoutedEventArgs e)
         {
             ignorMove = true;
-            configWindow.Show();
+            configWindow.ShowDialog();
             configWindow.Focus();
         }
 
         private void mouseBackground(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
-                togglePlay();
-            else
+            if (e.ChangedButton == MouseButton.Right)
                 toggleMusic();
+            // else  togglePlay();  - left button was just annoying
         }
 
         private void mouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -274,14 +285,16 @@ namespace PodPlayer
 
         private void keyPressed(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (stopAtNext && e.Key != Key.Escape)  // exit from stopAtNext mode
+            Console.WriteLine("Key pressed:" + e.Key.ToString());
+            String act = keyAction.getAction(e.Key);
+            if (stopAtNext && act != "Exit")  // exit from stopAtNext mode
             {
                 stopAtNext = false;
                 updateNext();
             }
-            switch (e.Key)
+            switch (act)
             {
-                case Key.Escape:
+                case "Exit":
                     if (!stopAtNext)
                     {
                         stopAtNext = true;
@@ -295,26 +308,26 @@ namespace PodPlayer
                         this.Close();
                     }
                     break;
-                case Key.Space:
+                case "Pause":
                     togglePlay();
                     break;
-                case Key.W:
+                case "Full Screen":
                     fullScreen(this.WindowState == WindowState.Normal);
                     break;
-                case Key.Tab:
+                case "Fast Forward":
                     wplayer.controls.currentPosition += wplayer.currentMedia.duration / 10;
                     wplayer.controls.play();
                     break;
-                case Key.Left:
+                case "Restart":
                     wplayer.controls.currentPosition = 0;
                     wplayer.controls.play();
                     break;
-                case Key.Right:
+                case "Next":
                     recordPodsHeard(wplayer.currentMedia.sourceURL, "SKIPPED_AT=" + wplayer.controls.currentPosition.ToString("F0") + "Sec");
                     wplayer.controls.next();
                     podMode = false;
                     break;
-                case Key.Delete:
+                case "Delete":
                     if (podMode)  // currently listening to a podcast
                     {
                         recordPodsHeard(wplayer.currentMedia.sourceURL, "DELETE");
@@ -325,17 +338,20 @@ namespace PodPlayer
                         // really need to add DELETE to previous line
                     }
                     break;
-                case Key.Enter:
+                case "Keep":
                     markAsKeep = true;
                     break;
-                case Key.H:  // just to test the heard function
+                case "Configure":
+                    showConfig(null, null);
+                    break;
+                case "Test Heard":  // just to test the heard function
                     if (podMode)
                     {
                         lastMediaHeard = true;
                         wplayer.controls.next();
                     }
                     break;
-                case Key.Up:
+                case "Vol+":
                     if (volume < 50)
                         volume += 1;
                     else if (volume < 100)
@@ -344,7 +360,7 @@ namespace PodPlayer
                     volLbl.Content = "Volume = " + volume;
                     volLbl.Opacity = 1.0;
                     break;
-                case Key.Down:
+                case "Vol-":
                     if (volume > 50)
                         volume -= 5;
                     else if (volume > 10)
@@ -353,6 +369,20 @@ namespace PodPlayer
                         wplayer.settings.volume = volume;
                     volLbl.Content = "Volume = " + wplayer.settings.volume;
                     volLbl.Opacity = 1.0;
+                    break;
+                case "Help":
+                    String path = System.IO.Path.GetDirectoryName(
+      System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+                    String fid = System.IO.Path.Combine(path, "help.html");
+                    Process.Start(fid);
+                    break;
+                case "HotKeys":
+                    keyWindow = new keySelectWindow(keyAction,false);
+                    keyWindow.ShowDialog();
+                    keyWindow.Focus();
+                    break;
+                case "Print Keys":
+                    keyAction.printKeys();
                     break;
             }
         }
@@ -393,6 +423,8 @@ namespace PodPlayer
         {
             if (fixLayoutPending)
                 fixLayout();
+            if (wplayer.currentMedia == null)
+                return;
             podMode = podPlayList.Contains(wplayer.currentMedia.sourceURL);
             //if (podMode && lastMediaHeard)  //have fini music it seems
             //{
@@ -544,12 +576,7 @@ namespace PodPlayer
                         {
                             DateTime lh = DateTime.ParseExact(tn[1], "yyyyMMdd_HHmmss", null);
                             TimeSpan ld = (DateTime.Now - lh);
-                            if (ld.TotalDays >= 2.0)
-                                lastHeard = ld.TotalDays.ToString("F0") + " days since heard";
-                            else if (ld.TotalHours >= 1.0)
-                                lastHeard = ld.TotalHours.ToString("F0") + " hours since heard";
-                            else
-                                lastHeard = ld.TotalMinutes.ToString("F0") + " minutes since heard";
+                            lastHeard = ld.TotalDays.ToString("F0") + " days";
                         }
                         else
                         {
@@ -558,16 +585,16 @@ namespace PodPlayer
                     }
                     else
                     {
-                        lastHeard = "Sometime since heard";
+                        lastHeard = "??? days";
                     }
-                    lastHeard = String.Format("{0,25}", lastHeard);
                     if (tn[tn.Length - 1].StartsWith("SKIPPED"))
                         skipCount++;
                     else
                         heardCount++;
                 }
             }
-            stat_str = lastHeard + " Count=" + heardCount.ToString() + " Skipped=" + skipCount.ToString() + " Name=" + stat_str;
+            lastHeard = String.Format("{0,25}", lastHeard);
+            stat_str = "Count=" + heardCount.ToString() + " Skipped=" + skipCount.ToString() + " " + lastHeard + " Name=" + stat_str;
             return stat_str;
         }
 
@@ -796,6 +823,24 @@ namespace PodPlayer
             }
         }
 
+        public void sampleNamed(string name)
+        {
+            string tn = findPod(name);
+            if (tn == null)
+                return;
+            if (!playingSample && wplayer.playState == WMPLib.WMPPlayState.wmppsPlaying)
+                return;
+            wplayer.URL = tn;
+            wplayer.controls.play();
+            playingSample = true;
+        }
+
+        public void stopSample()
+        {
+            wplayer.controls.stop();
+            playingSample = false;
+        }
+
         public void deleteDelete()
         {   // delete pods heard that are marked delete
             int dc = 0;
@@ -834,23 +879,21 @@ namespace PodPlayer
                     continue;
                 String pod_name = getPodName(tn[0]);
                 if (pod_name.Equals(name))
-                    return pod_name;
+                    return tn[0];
             }
             return null;
         }
 
         public void deletePodCast(string name)
         {   // delete pods heard that are marked delete
-            int dc = 0;
             string tn = findPod(name);
-            if (tn != null)
+            if (tn == null)
             {
-                dc++;
-                Console.WriteLine("Deleting file:" + tn[0]);
+                Console.WriteLine("Cannot find file {0} to delete it." + tn);
             }
-            if (System.Windows.MessageBox.Show("Delete " + dc.ToString() + " files", "WARNING", System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.No)
+            if (System.Windows.MessageBox.Show("Delete file name:" + tn, "WARNING", System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.No)
                 return;
-            Console.WriteLine("Deleting file:" + tn[0]);
+            Console.WriteLine("Deleting file:" + tn);
             try
             {
                 File.Delete(tn);
@@ -859,6 +902,25 @@ namespace PodPlayer
             {
                 System.Windows.MessageBox.Show("Exception:" + e.ToString());
             }
+        }
+
+        public void clearPlayList()
+        {
+            wplayer.controls.stop();
+            wplayer.currentPlaylist.clear();
+        }
+
+        public void addNamed(string name)
+        {
+            string url = findPod(name);
+            if (url == null)
+                return;
+            wplayer.currentPlaylist.appendItem(wplayer.newMedia(url));
+        }
+
+        public void playList()
+        {
+            wplayer.controls.play();
         }
     }
 }

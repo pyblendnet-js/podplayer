@@ -11,7 +11,7 @@
         <Label Content="Playlist statisitcs" Height="32" Foreground="Coral" Margin="20,0,20,40" Name="playlistStatsLbl" VerticalAlignment="Bottom" VerticalContentAlignment="Center"/>
         <Label Content="next in playlist" Height="32" Foreground="LawnGreen" Margin="20,0,20,20" Name="nextMediaLbl" VerticalAlignment="Bottom" VerticalContentAlignment="Center" MouseUp="selectSong"/>
         <Label Content="Volume: 20" Height="24" Foreground="LawnGreen" Margin="20,80,20,0" Name="volLbl" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
-        <Button Content="Config" Foreground="BlanchedAlmond" Background="DarkCyan" Height="26" HorizontalAlignment="Right" Margin="485,295,0,0" Name="button1" VerticalAlignment="Bottom" Width="55" Click="showConfig" />
+        <Button Content="Config" Foreground="BlanchedAlmond" Background="DarkCyan" Height="26" HorizontalAlignment="Right" Margin="485,295,0,0" Name="button1" VerticalAlignment="Bottom" Width="55" Click="showConfig" Focusable="False" />
         <Label Height="28" HorizontalAlignment="Left" Margin="19,86,0,0" Name="lastHeardLabel" VerticalAlignment="Top" Content="Never Heard" Foreground="Yellow"/>
         <Label Height="28" HorizontalAlignment="Right" Margin="19,86,0,0" Name="timesHeardLabel" VerticalAlignment="Top" Content="Never Heard" Foreground="Cyan"/>
     </Grid>

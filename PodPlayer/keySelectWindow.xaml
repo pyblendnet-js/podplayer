@@ -1,0 +1,20 @@
+﻿<Window x:Class="keySelectWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Window3" Height="300" Width="300">
+    <DockPanel>
+        <StackPanel Orientation="Horizontal" Height="30" DockPanel.Dock="Top">
+            <Label Name="actionLbl" Content="Action" Width="160"/>
+            <Label Name="keyLbl" Content="Key" Width="100"/>
+        </StackPanel>
+        <StackPanel Name="buttonStack" DockPanel.Dock="Bottom" FlowDirection="LeftToRight">
+        <Button Content="Save"  Height="30" Click="saveActionKeys"/>
+        <Button Content="Reload" Height="30" Click="reloadActionKeys"/>
+        </StackPanel>
+        <ScrollViewer>
+            <StackPanel Name="keyStackPanel">
+              
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

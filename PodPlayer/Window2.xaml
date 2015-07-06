@@ -1,9 +1,17 @@
 ﻿<Window x:Class="PodPlayer.Window2"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Pods Heard" Height="300" Width="894">
+        Title="Pod Review" Height="300" Width="894" KeyUp="keyPressed">
     <Grid>
         <ListBox Height="206" HorizontalAlignment="Left" Margin="8,6,0,0" Name="listBox1" VerticalAlignment="Top" Width="857" SelectionMode="Multiple"/>
-        <Button Content="Delete" Height="25" HorizontalAlignment="Right" Margin="0,0,10,10" Name="button1" VerticalAlignment="Bottom" Width="60" Click="deletePods"/>
+        <Button Height="25" HorizontalAlignment="Right" Margin="0,0,10,10" Name="button1" VerticalAlignment="Bottom" Width="160" Click="deletePods">
+          <TextBlock><Underline><Bold>D</Bold></Underline>eleteSelected</TextBlock>
+        </Button>
+        <Button Height="25" HorizontalAlignment="Center" Margin="0,0,100,10" Name="button2" VerticalAlignment="Bottom" Width="120" Click="playPods">
+            <TextBlock><Underline><Bold>P</Bold></Underline>laySelected</TextBlock>
+        </Button>
+        <CheckBox Height="18" HorizontalAlignment="Left" Margin="10,234,0,0" Name="checkBox1" VerticalAlignment="Top" Width="164">
+            <TextBlock><Underline><Bold>S</Bold></Underline>ample With Mouse Over</TextBlock>
+        </CheckBox>
     </Grid>
 </Window>

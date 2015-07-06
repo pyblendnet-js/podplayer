@@ -23,12 +23,15 @@ namespace PodPlayer
     public partial class Window1 : Window
     {
         MainWindow playWindow;
-        private Window2 heardWindow = null;
+        protected Window2 heardWindow = null;
+        protected keySelectWindow keyWindow = null;
         public bool closeReally = false;
         private char[] argSeperator = "=".ToArray<char>();
+        public KeyActionClass keyAction;
 
-        public Window1(MainWindow parent)
+        public Window1(MainWindow parent, KeyActionClass ka)
         {
+            keyAction = ka;
             playWindow = parent;
             InitializeComponent();
             songListPathTextBox.Text = @"C:\Users\home\Music\Playlists\wakeupSongs.wpl";
@@ -47,6 +50,11 @@ namespace PodPlayer
             {
                 heardWindow.Close();
                 heardWindow = null;
+            }
+            if (keyWindow != null)
+            {
+                keyWindow.Close();
+                keyWindow = null;
             }
         }
 
@@ -104,14 +112,13 @@ namespace PodPlayer
         {
             try
             {
-                // Write each directory name to a file. 
                 using (StreamWriter sw = new StreamWriter("podPlayer.cfg", false))  //do not append
                 {
-                    sw.WriteLine("alt_song " + altMusicCheckBox.IsChecked.ToString());
-                    sw.WriteLine("fade_in " + fadeInSpeedTextBox.Text);
-                    sw.WriteLine("pod_path " + podPathTextBox.Text);
-                    sw.WriteLine("songlist_path " + songListPathTextBox.Text);
-                    sw.WriteLine("wake_songlist_path " + wakeSongListPathTextBox.Text);
+                    sw.WriteLine("alt_song = " + altMusicCheckBox.IsChecked.ToString());
+                    sw.WriteLine("fade_in = " + fadeInSpeedTextBox.Text);
+                    sw.WriteLine("pod_path = " + podPathTextBox.Text);
+                    sw.WriteLine("songlist_path = " + songListPathTextBox.Text);
+                    sw.WriteLine("wake_songlist_path = " + wakeSongListPathTextBox.Text);
                 }
             }
             catch (Exception ec)
@@ -120,6 +127,18 @@ namespace PodPlayer
             }
         }
 
+        private void keyPressed(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Escape:
+                    this.Close();
+                    break;
+                case Key.R:
+                    reviewPodsHeard(null, null);
+                    break;
+            }
+        }
 
 
         private void saveConfig(Object obj, RoutedEventArgs e)
@@ -144,7 +163,7 @@ namespace PodPlayer
             DialogResult result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK) // Test result.
             {
-                if(watch_list)
+                if (watch_list)
                     wakeSongListPathTextBox.Text = fileDialog.FileName;
                 else
                     songListPathTextBox.Text = fileDialog.FileName;
@@ -185,9 +204,18 @@ namespace PodPlayer
 
         void reviewPodsHeard(Object obj, RoutedEventArgs e)
         {
+            //if(heardWindow == null)
             heardWindow = new Window2(this, playWindow);
-            heardWindow.Show();
+            //heardWindow.Show();
+            heardWindow.ShowDialog();
+            heardWindow.Focus();
         }
 
+        void setKeys(Object obj, RoutedEventArgs e)
+        {
+            keyWindow = new keySelectWindow(keyAction);
+            keyWindow.ShowDialog();
+            keyWindow.Focus();
+        }
     }
 }
