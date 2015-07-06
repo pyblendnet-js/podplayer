@@ -22,8 +22,11 @@ namespace PodPlayer
     /// </summary>
     public partial class Window1 : Window
     {
-        public Window1()
+        MainWindow playWindow;
+
+        public Window1(MainWindow parent)
         {
+            playWindow = parent;
             InitializeComponent();
             songListPathTextBox.Text = @"C:\Users\home\Music\Playlists\wakeupSongs.wpl";
             podPathTextBox.Text = @"C:\Users\home\Documents\My Received Podcasts";
@@ -130,6 +133,16 @@ namespace PodPlayer
                  podPathTextBox.Text = pathDialog.SelectedPath;
                  Console.WriteLine(result);
              }
+        }
+
+        void deleteDelete(Object obj, RoutedEventArgs e)
+        {
+            playWindow.deleteDelete();
+        }
+
+        void resaveHeard(Object obj, RoutedEventArgs e)
+        {
+            playWindow.savePodsHeard();
         }
     }
 }

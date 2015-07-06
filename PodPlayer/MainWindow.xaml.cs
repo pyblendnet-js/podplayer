@@ -52,8 +52,8 @@ namespace PodPlayer
         {
             InitializeComponent();
 
-            configWindow = new Window1();
-
+            configWindow = new Window1(this);
+            
             rand = new Random(DateTime.Now.Millisecond);
             fullScreen(true);
             loadPodsHeard();
@@ -104,7 +104,8 @@ namespace PodPlayer
             {
                 if (wplayer.controls.currentItem.sourceURL == wplayer.currentPlaylist.get_Item(i).sourceURL)
                 {
-                    for (int j = i + 1; j < wplayer.currentPlaylist.count - 1; j++)
+                    int j = i + 1;
+                    while(wplayer.currentPlaylist.count > j)
                     {
                         wplayer.currentPlaylist.removeItem(wplayer.currentPlaylist.get_Item(j));
                     }
@@ -136,7 +137,6 @@ namespace PodPlayer
                 startTime = DateTime.Now;
             }
         }
-
 
         private void fullScreen(bool state)
         {
@@ -444,7 +444,7 @@ namespace PodPlayer
                 volLbl.Opacity -= 0.1;
             }
             Double rem_sec = wplayer.currentMedia.duration - wplayer.controls.currentPosition;
-            lastMediaHeard = (rem_sec < 2);
+            lastMediaHeard = (rem_sec < 2);  //prevents record unless end is heard
             remainderLbl.Content = rem_sec.ToString("F0") + " Sec";
             //double tm = (DateTime.Now - startTime).TotalSeconds;
             double tm = wplayer.controls.currentPosition;
@@ -612,7 +612,7 @@ namespace PodPlayer
 
         }
 
-        private void savePodsHeard()
+        public void savePodsHeard()
         {
             // this save will remove all the files that nolonger exist 
             try
@@ -658,10 +658,12 @@ namespace PodPlayer
                                     if (tn.Contains("DELETE"))
                                     {
                                         rep = -1;  // this one due for deletion
-                                        if (rep == 0) podsFoundCount--;
+                                        if (ri == 0 && rep == 0)
+                                            podsFoundCount--;
                                         break;
                                     }
-                                    if (rep == 0 && !wakeupSongs.Contains(pc)) podsHeardCount++;
+                                    if (ri == 0 && rep == 0 && !wakeupSongs.Contains(ph))
+                                        podsHeardCount++;
                                     rep++;
                                 }
                             }
@@ -670,6 +672,31 @@ namespace PodPlayer
                             continue;
                         podPlayList.Add(pc);
                     }
+                }
+            }
+        }
+
+        public void deleteDelete()
+        {   // delete pods heard that are marked delete
+            int dc = 0;
+            foreach (string ph in podsHeard)
+            {
+                String[] tn = ph.Split(podsHeardSeperator);
+                if (tn.Contains("DELETE"))
+                {
+                    dc++;
+                    Console.WriteLine("Deleting file:" + tn[0]);
+                }
+            }
+            if (System.Windows.MessageBox.Show("Delete " + dc.ToString() + " files", "WARNING", System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.No)
+                return;
+            foreach (string ph in podsHeard)
+            {
+                String[] tn = ph.Split(podsHeardSeperator);
+                if (tn.Contains("DELETE"))
+                {
+                    Console.WriteLine("Deleting file:" + tn[0]);
+                    File.Delete(tn[0]);
                 }
             }
         }
