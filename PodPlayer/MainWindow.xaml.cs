@@ -786,7 +786,7 @@ namespace PodPlayer
             podPlayList = new List<string>();
             if (Directory.Exists(configWindow.podPathTextBox.Text))
             {
-                List<String> pl = new List<string>(Directory.EnumerateFiles(configWindow.podPathTextBox.Text, "*.mp3", SearchOption.AllDirectories));
+                List<String> pl = new List<string>(FindFiles.FileSystemEnumerator(configWindow.podPathTextBox.Text, "*.mp3", SearchOption.AllDirectories));
                 podsFoundCount = pl.Count;
                 // suffle the podcasts
                 pl = new List<String>(pl.OrderBy(item => rand.Next()));
