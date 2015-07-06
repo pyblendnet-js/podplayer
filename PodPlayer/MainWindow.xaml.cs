@@ -341,7 +341,7 @@ namespace PodPlayer
                     else if (volume < 100)
                         volume += 5;
                     wplayer.settings.volume = volume;
-                        volLbl.Content = "Volume = " + volume;
+                    volLbl.Content = "Volume = " + volume;
                     volLbl.Opacity = 1.0;
                     break;
                 case Key.Down:
@@ -513,15 +513,20 @@ namespace PodPlayer
             return -1;
         }
 
+        public string getPodName(String url)
+        {
+            WMPLib.WindowsMediaPlayer tplayer = new WMPLib.WindowsMediaPlayer();
+            tplayer.URL = url;
+            String name_str = tplayer.currentMedia.name;
+            tplayer.close();
+            return name_str;
+        }
+
         public string getPodStats(String url)
         {
             if (!File.Exists(url))
                 return "Gone";
-            WMPLib.WindowsMediaPlayer tplayer = new WMPLib.WindowsMediaPlayer();
-            tplayer.URL = url;
-            String stat_str = tplayer.currentMedia.name;
-            tplayer.close();
-
+            String stat_str = getPodName(url);
             // see how many times it has been heard etc
             String lastHeard = "NeverHeard";
             int heardCount = 0;
@@ -535,26 +540,27 @@ namespace PodPlayer
                     {
                         if (tn[tn.Length - 1].StartsWith("SKIPPED"))
                             continue;
-                        //if (tn[1].Length == 15)
-                        //{
-                        //    DateTime lh = DateTime.ParseExact(tn[1], "yyyyMMdd_HHmmss", null);
-                        //    TimeSpan ld = (DateTime.Now - lh);
-                        //    if (ld.TotalDays >= 2.0)
-                        //        lastHeard = ld.TotalDays.ToString("F0") + "days since heard";
-                        //    else if (ld.TotalHours >= 1.0)
-                        //        lastHeard = ld.TotalHours.ToString("F0") + "hours since heard";
-                        //    else
-                        //        lastHeard = ld.TotalMinutes.ToString("F0") + "minutes since heard";
-                        //}
-                        //else
-                        //{
-                        lastHeard = tn[1];
-                        //}
+                        if (tn[1].Length == 15)
+                        {
+                            DateTime lh = DateTime.ParseExact(tn[1], "yyyyMMdd_HHmmss", null);
+                            TimeSpan ld = (DateTime.Now - lh);
+                            if (ld.TotalDays >= 2.0)
+                                lastHeard = ld.TotalDays.ToString("F0") + " days since heard";
+                            else if (ld.TotalHours >= 1.0)
+                                lastHeard = ld.TotalHours.ToString("F0") + " hours since heard";
+                            else
+                                lastHeard = ld.TotalMinutes.ToString("F0") + " minutes since heard";
+                        }
+                        else
+                        {
+                            lastHeard = tn[1] + " heard";
+                        }
                     }
                     else
                     {
-                        lastHeard = "Heard       ";
+                        lastHeard = "Sometime since heard";
                     }
+                    lastHeard = String.Format("{0,25}", lastHeard);
                     if (tn[tn.Length - 1].StartsWith("SKIPPED"))
                         skipCount++;
                     else
@@ -816,6 +822,42 @@ namespace PodPlayer
                     Console.WriteLine("Deleting file:" + tn[0]);
                     File.Delete(tn[0]);
                 }
+            }
+        }
+
+        public string findPod(string name)
+        {
+            foreach (string ph in podsHeard)
+            {
+                String[] tn = ph.Split(podsHeardSeperator);
+                if (!podPlayList.Contains(tn[0]))  // don't delete songs
+                    continue;
+                String pod_name = getPodName(tn[0]);
+                if (pod_name.Equals(name))
+                    return pod_name;
+            }
+            return null;
+        }
+
+        public void deletePodCast(string name)
+        {   // delete pods heard that are marked delete
+            int dc = 0;
+            string tn = findPod(name);
+            if (tn != null)
+            {
+                dc++;
+                Console.WriteLine("Deleting file:" + tn[0]);
+            }
+            if (System.Windows.MessageBox.Show("Delete " + dc.ToString() + " files", "WARNING", System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.No)
+                return;
+            Console.WriteLine("Deleting file:" + tn[0]);
+            try
+            {
+                File.Delete(tn);
+            }
+            catch (Exception e)
+            {
+                System.Windows.MessageBox.Show("Exception:" + e.ToString());
             }
         }
     }

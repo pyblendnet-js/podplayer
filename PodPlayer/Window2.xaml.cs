@@ -39,9 +39,11 @@ namespace PodPlayer
 
         private void deletePods(Object obj, RoutedEventArgs e)
         {
-            foreach (var item in listBox1.SelectedItems)
+            foreach (string item in listBox1.SelectedItems)
             {
-
+                int i = item.IndexOf("Name=");
+                string name = item.Substring(i + 5);
+                playWindow.deletePodCast(name);
             }
         }
     }
