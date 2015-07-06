@@ -1,17 +1,20 @@
 ﻿<Window x:Class="PodPlayer.Window1"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="PodPalyerConfig" Height="300" Width="300" Closing="windowClosing">
+        Title="PodPalyerConfig" Height="300" Width="478" Closing="windowClosing">
     <Grid>
         <CheckBox Content="Play Alt Music" Height="24" HorizontalAlignment="Left" Margin="0,0,0,0" Name="altMusicCheckBox" VerticalAlignment="Bottom" Width="100" IsChecked="True" />
         <Button Content="Save podcasts heard which exist" Height="25" HorizontalAlignment="Left" Margin="54,0,0,30" Name="saveHeardBtn" VerticalAlignment="Bottom" Width="185" ToolTip="Removes those from list which are nolong stored locally" Click="resaveHeard"/>
-        <TextBox Height="20" HorizontalAlignment="Left" Margin="8,33,0,0" Name="fadeInSpeedTextBox" VerticalAlignment="Top" Width="40" Text="10"/>
-        <Label Content="fadeInSpeed%" Height="32" HorizontalAlignment="Left" Margin="50,29,0,0" Name="label1" VerticalAlignment="Top" Width="111" />
-        <Button Content="SaveConfig" Height="23" HorizontalAlignment="Left" Margin="116,8,0,0" Name="button1" VerticalAlignment="Top" Width="148" Click="saveConfig"/>
-        <Label Content="PodFile Path:" Height="29" HorizontalAlignment="Left" Margin="11,62,0,0" Name="podPathLabel" VerticalAlignment="Top" Width="97" MouseUp="findPath"/>
-        <TextBox Height="27" HorizontalAlignment="Left" Margin="105,64,0,0" Name="podPathTextBox" Text="" VerticalAlignment="Top" Width="167" />
+        <TextBox Height="25" HorizontalAlignment="Left" Margin="120,40,0,0" Name="fadeInSpeedTextBox" VerticalAlignment="Top" Width="40" Text="10"/>
+        <Label Content="fadeInSpeed%" Height="25" HorizontalAlignment="Left" Margin="10,40,0,0" Name="label1" VerticalAlignment="Top" Width="111" />
+        <Button Content="SaveConfig" Height="23" HorizontalAlignment="Left" Margin="10,8,0,0" Name="button1" VerticalAlignment="Top" Width="148" Click="saveConfig"/>
+        <Label Content="PodFile Path:" Height="29" HorizontalAlignment="Left" Margin="11,70,0,0" Name="podPathLabel" VerticalAlignment="Top" Width="97" MouseUp="findPath"/>
+        <TextBox Height="27" Margin="110,70,70,0" Name="podPathTextBox" Text="" VerticalAlignment="Top" />
+        <Button Content="Browse" Height="23" HorizontalAlignment="Right" Margin="0,70,10,0" Name="browseBtn1" VerticalAlignment="Top" Width="50" Click="findPath"/>
         <Label Content="SongList Playlist:" Height="27" HorizontalAlignment="Left" Margin="11,100,0,0" Name="songListLbl" VerticalAlignment="Top" Width="97" MouseUp="findFile"/>
-        <TextBox Height="27" HorizontalAlignment="Left" Margin="105,100,0,0" Name="songListPathTextBox" Text="" VerticalAlignment="Top" Width="167" />
-        <Button Content="Delete pods marked DELETE" Height="23" HorizontalAlignment="Left" Margin="54,139,0,0" Name="button2" VerticalAlignment="Top" Width="185" Click="deleteDelete"/>
+        <TextBox Height="27" Margin="110,100,70,0" Name="songListPathTextBox" Text="" VerticalAlignment="Top" />
+        <Button Content="Browse" Height="23" HorizontalAlignment="Right" Margin="0,100,10,0" Name="browseBtn2" VerticalAlignment="Top" Width="50" Click="findFile"/>
+        <Button Content="Delete pods marked DELETE" Height="25" HorizontalAlignment="Left" Margin="54,140,0,0" Name="button2" VerticalAlignment="Top" Width="185" Click="deleteDelete"/>
+        <Button Content="Review pods heard" Height="25" HorizontalAlignment="Left" Margin="54,170,0,0" Name="reviewBtn" VerticalAlignment="Top" Width="185" Click="reviewPodsHeard"/>
     </Grid>
 </Window>

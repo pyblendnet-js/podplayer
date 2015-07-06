@@ -23,6 +23,7 @@ namespace PodPlayer
     public partial class Window1 : Window
     {
         MainWindow playWindow;
+        private Window2 heardWindow;
 
         public Window1(MainWindow parent)
         {
@@ -104,35 +105,52 @@ namespace PodPlayer
             }
         }
 
-       
+
 
         private void saveConfig(Object obj, RoutedEventArgs e)
         {
             saveConfig();
         }
 
+        void findFile(Object obj, System.Windows.RoutedEventArgs e)
+        {
+            findFile();
+        }
         void findFile(Object obj, System.Windows.Input.MouseEventArgs e)
         {
-                        OpenFileDialog fileDialog = new OpenFileDialog();
-                fileDialog.InitialDirectory = System.IO.Path.GetDirectoryName(songListPathTextBox.Text);
+            findFile();
+        }
+        void findFile()
+        {
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.InitialDirectory = System.IO.Path.GetDirectoryName(songListPathTextBox.Text);
             DialogResult result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK) // Test result.
             {
-                    songListPathTextBox.Text = fileDialog.FileName;
+                songListPathTextBox.Text = fileDialog.FileName;
             }
             Console.WriteLine(result);
         }
 
+        void findPath(Object obj, System.Windows.RoutedEventArgs e)
+        {
+            findPath();
+        }
         void findPath(Object obj, System.Windows.Input.MouseEventArgs e)
         {
+            findPath();
+        }
+
+        void findPath()
+        {
             FolderBrowserDialog pathDialog = new FolderBrowserDialog();
-                pathDialog.SelectedPath = podPathTextBox.Text;
-             DialogResult result = pathDialog.ShowDialog();
-             if (result == System.Windows.Forms.DialogResult.OK) // Test result.
-             {
-                 podPathTextBox.Text = pathDialog.SelectedPath;
-                 Console.WriteLine(result);
-             }
+            pathDialog.SelectedPath = podPathTextBox.Text;
+            DialogResult result = pathDialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK) // Test result.
+            {
+                podPathTextBox.Text = pathDialog.SelectedPath;
+                Console.WriteLine(result);
+            }
         }
 
         void deleteDelete(Object obj, RoutedEventArgs e)
@@ -144,5 +162,12 @@ namespace PodPlayer
         {
             playWindow.savePodsHeard();
         }
+
+        void reviewPodsHeard(Object obj, RoutedEventArgs e)
+        {
+            heardWindow = new Window2(this, playWindow);
+            heardWindow.Show();
+        }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel; // CancelEventArgs
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +16,7 @@ using System.Windows.Threading;
 using System.IO;
 using System.Windows.Interop;
 using System.Windows.Forms;  //for file dialog
-
+using System.Diagnostics;
 
 namespace PodPlayer
 {
@@ -28,7 +29,7 @@ namespace PodPlayer
         private WMPLib.WindowsMediaPlayer wplayer;
         private DateTime startTime;
         private List<string> wakeupSongs;
-        private List<string> podsHeard;
+        public List<string> podsHeard;
         private char[] podsHeardSeperator = ",".ToArray<char>();
         private List<string> podPlayList;
         private List<string> songPlayList;
@@ -50,11 +51,21 @@ namespace PodPlayer
         private bool ignorMove = false;
         public MainWindow()
         {
-            InitializeComponent();
+            InitializeComponent();        
 
             configWindow = new Window1(this);
-            
+
             rand = new Random(DateTime.Now.Millisecond);
+        }
+
+        private void windowLoaded(object sender, RoutedEventArgs e)
+        {
+            Process[] processes = Process.GetProcessesByName("PodPlayer");
+            if (processes.Count() > 1)
+            {
+                this.Close();
+                return;
+            }
             fullScreen(true);
             loadPodsHeard();
             loadSongs();
@@ -87,11 +98,31 @@ namespace PodPlayer
                 wplayer.URL = "sample.mp3";
             queueMedia();
 
+            //this.KeyDown += new KeyEventHandler(keyPressed);
+            fixLayout();
+            //    IntPtr wh = new WindowInteropHelper(this).Handle;
+            //    SendMessage(wh, WM_SYSCOMMAND, (IntPtr)SC_MONITORPOWER, (IntPtr)MONITOR_OFF);
+            this.Focus();
+
             //  updateTimer setup
             updateTimer = new System.Windows.Threading.DispatcherTimer();
             updateTimer.Tick += new EventHandler(updateTick);
             updateTimer.Interval = new TimeSpan(0, 0, 1);
             updateTimer.Start();
+        }
+
+        private void windowClosing(Object sender, CancelEventArgs e)
+        {
+            //e.Cancel = true;  //if you wanted to stop it 
+            if (updateTimer != null)
+                updateTimer.Stop();
+            if (wplayer != null)
+            {
+                wplayer.controls.stop();
+                wplayer.close();
+            }
+            if(configWindow != null)
+                configWindow.Close();
         }
 
         private void queueMedia(bool music_only = false)
@@ -105,7 +136,7 @@ namespace PodPlayer
                 if (wplayer.controls.currentItem.sourceURL == wplayer.currentPlaylist.get_Item(i).sourceURL)
                 {
                     int j = i + 1;
-                    while(wplayer.currentPlaylist.count > j)
+                    while (wplayer.currentPlaylist.count > j)
                     {
                         wplayer.currentPlaylist.removeItem(wplayer.currentPlaylist.get_Item(j));
                     }
@@ -160,15 +191,6 @@ namespace PodPlayer
             configWindow.Focus();
         }
 
-        private void windowLoaded(object sender, RoutedEventArgs e)
-        {
-            //this.KeyDown += new KeyEventHandler(keyPressed);
-            fixLayout();
-            //    IntPtr wh = new WindowInteropHelper(this).Handle;
-            //    SendMessage(wh, WM_SYSCOMMAND, (IntPtr)SC_MONITORPOWER, (IntPtr)MONITOR_OFF);
-            this.Focus();
-        }
-
         private void mouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -195,14 +217,14 @@ namespace PodPlayer
             DialogResult result = fileDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK) // Test result.
             {
-                if(i < 0)
+                if (i < 0)
                     wplayer.URL = fileDialog.FileName;
                 else
-                    wplayer.currentPlaylist.insertItem(i+1, wplayer.newMedia(fileDialog.FileName));
+                    wplayer.currentPlaylist.insertItem(i + 1, wplayer.newMedia(fileDialog.FileName));
                 if (sender == statusLbl)
                     recordPodsHeard(wplayer.currentMedia.sourceURL, "SKIPPED_AT=" + wplayer.controls.currentPosition.ToString("F0") + "Sec");
                 wplayer.controls.next();
-                    }
+            }
             Console.WriteLine(result);
             ignorMove = false;
         }
@@ -278,10 +300,14 @@ namespace PodPlayer
                     podMode = false;
                     break;
                 case Key.Delete:
-                    if (podMode)
+                    if (podMode)  // currently listening to a podcast
                     {
                         recordPodsHeard(wplayer.currentMedia.sourceURL, "DELETE");
                         wplayer.controls.next();
+                    }
+                    else  //listening to music
+                    {
+                        // really need to add DELETE to previous line
                     }
                     break;
                 case Key.Enter:
@@ -531,7 +557,7 @@ namespace PodPlayer
             pl = new List<String>(pl.OrderBy(item => rand.Next()));
             int fc = 0;
             int ri = 0;
-            while(fc < pl.Count)
+            while (fc < pl.Count)
             {
                 foreach (String pc in pl)
                 {
@@ -549,15 +575,15 @@ namespace PodPlayer
                                     break;
                                 }
                                 if (tn[tn.Length - 1].StartsWith("SKIPPED"))
-                                    continue;  
+                                    continue;
                                 rep++;
                             }
                         }
                     }
-                    if(rep != ri)
-                      continue;
+                    if (rep != ri)
+                        continue;
                     fc++;
-                    if(rep < 0)
+                    if (rep < 0)
                         continue;
                     songPlayList.Add(pc);
                 }
@@ -682,6 +708,8 @@ namespace PodPlayer
             foreach (string ph in podsHeard)
             {
                 String[] tn = ph.Split(podsHeardSeperator);
+                if (wakeupSongs.Contains(tn[0]))  // don't delete songs
+                    continue;
                 if (tn.Contains("DELETE"))
                 {
                     dc++;
@@ -693,6 +721,8 @@ namespace PodPlayer
             foreach (string ph in podsHeard)
             {
                 String[] tn = ph.Split(podsHeardSeperator);
+                if (wakeupSongs.Contains(tn[0]))  // don't delete songs
+                    continue;
                 if (tn.Contains("DELETE"))
                 {
                     Console.WriteLine("Deleting file:" + tn[0]);

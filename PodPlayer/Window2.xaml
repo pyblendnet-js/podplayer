@@ -1,0 +1,9 @@
+﻿<Window x:Class="PodPlayer.Window2"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pods Heard" Height="300" Width="894">
+    <Grid>
+        <ListBox Height="206" HorizontalAlignment="Left" Margin="8,6,0,0" Name="listBox1" VerticalAlignment="Top" Width="857" SelectionMode="Multiple"/>
+        <Button Content="Delete" Height="25" HorizontalAlignment="Right" Margin="0,0,10,10" Name="button1" VerticalAlignment="Bottom" Width="60" Click="deletePods"/>
+    </Grid>
+</Window>
