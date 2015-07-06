@@ -11,10 +11,13 @@
         <Label Content="PodFile Path:" Height="29" HorizontalAlignment="Left" Margin="11,70,0,0" Name="podPathLabel" VerticalAlignment="Top" Width="97" MouseUp="findPath"/>
         <TextBox Height="27" Margin="110,70,70,0" Name="podPathTextBox" Text="" VerticalAlignment="Top" />
         <Button Content="Browse" Height="23" HorizontalAlignment="Right" Margin="0,70,10,0" Name="browseBtn1" VerticalAlignment="Top" Width="50" Click="findPath"/>
-        <Label Content="SongList Playlist:" Height="27" HorizontalAlignment="Left" Margin="11,100,0,0" Name="songListLbl" VerticalAlignment="Top" Width="97" MouseUp="findFile"/>
-        <TextBox Height="27" Margin="110,100,70,0" Name="songListPathTextBox" Text="" VerticalAlignment="Top" />
+        <Label Content="WakeSongList Playlist:" Height="27" HorizontalAlignment="Left" Margin="11,100,0,0" Name="wakeSongListLbl" VerticalAlignment="Top" Width="130" MouseUp="findFile"/>
+        <TextBox Height="27" Margin="150,100,70,0" Name="wakeSongListPathTextBox" Text="" VerticalAlignment="Top" />
         <Button Content="Browse" Height="23" HorizontalAlignment="Right" Margin="0,100,10,0" Name="browseBtn2" VerticalAlignment="Top" Width="50" Click="findFile"/>
-        <Button Content="Delete pods marked DELETE" Height="25" HorizontalAlignment="Left" Margin="54,140,0,0" Name="button2" VerticalAlignment="Top" Width="185" Click="deleteDelete"/>
+        <Label Content="SongList Playlist:" Height="27" HorizontalAlignment="Left" Margin="11,130,0,0" Name="songListLbl" VerticalAlignment="Top" Width="97" MouseUp="findFile"/>
+        <TextBox Height="27" Margin="110,130,70,0" Name="songListPathTextBox" Text="" VerticalAlignment="Top" />
+        <Button Content="Browse" Height="23" HorizontalAlignment="Right" Margin="0,130,10,0" Name="browseBtn3" VerticalAlignment="Top" Width="50" Click="findFile"/>
+        <Button Content="Delete pods marked DELETE" Height="25" HorizontalAlignment="Left" Margin="254,170,0,0" Name="button2" VerticalAlignment="Top" Width="185" Click="deleteDelete"/>
         <Button Content="Review pods heard" Height="25" HorizontalAlignment="Left" Margin="54,170,0,0" Name="reviewBtn" VerticalAlignment="Top" Width="185" Click="reviewPodsHeard"/>
     </Grid>
 </Window>

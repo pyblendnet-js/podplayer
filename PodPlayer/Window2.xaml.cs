@@ -28,7 +28,7 @@ namespace PodPlayer
             InitializeComponent();
             foreach (string s in playWindow.podPlayList)
             {
-                if (playWindow.wakeupSongs.Contains(s))
+                if (!playWindow.podPlayList.Contains(s))
                     continue;
                 String st = playWindow.getPodStats(s);
                 if (st == "Gone" || st.StartsWith("NeverHeard"))

@@ -28,7 +28,9 @@ namespace PodPlayer
         private DispatcherTimer updateTimer;
         private WMPLib.WindowsMediaPlayer wplayer;
         private DateTime startTime;
-        public List<string> wakeupSongs;
+        public List<string> wakeupSongList;
+        public string wakeupSong;
+        //public List<string> tweenSongs;
         public List<string> podsHeard;
         private char[] podsHeardSeperator = ",".ToArray<char>();
         public List<string> podPlayList;
@@ -90,9 +92,9 @@ namespace PodPlayer
             //WMPLib.IWMPPlaylist pl = wplayer.playlistCollection.newPlaylist("todays");
             //pl.appendItem(WMPLib.
             //String nm = wplayer.currentPlaylist.name;
-            if (wakeupSongs.Count > 0)
+            if (wakeupSong != "")
             {
-                wplayer.URL = songPlayList[0];
+                wplayer.URL = wakeupSong;
             }
             else
                 wplayer.URL = "sample.mp3";
@@ -157,7 +159,7 @@ namespace PodPlayer
                 foreach (String p in podPlayList)
                 {
                     wplayer.currentPlaylist.appendItem(wplayer.newMedia(p));
-                    if ((wakeupSongs.Count > 0) && (bool)configWindow.altMusicCheckBox.IsChecked)
+                    if ((songPlayList.Count > 0) && (bool)configWindow.altMusicCheckBox.IsChecked)
                     {
                         String url = songPlayList[ni++];
                         if (ni >= songPlayList.Count)
@@ -192,9 +194,9 @@ namespace PodPlayer
             configWindow.Focus();
         }
 
-        private void mouseDown(object sender, MouseButtonEventArgs e)
+        private void mouseBackground(object sender, MouseButtonEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (e.ChangedButton == MouseButton.Left)
                 togglePlay();
             else
                 toggleMusic();
@@ -208,10 +210,15 @@ namespace PodPlayer
 
         private void selectSong(object sender, MouseButtonEventArgs e)
         {
+            if (e.ChangedButton == MouseButton.Right)
+            {
+                //mouseBackground(sender, e);
+                return;
+            }
             ignorMove = true;
             int i = getIndexOfCurrent();
             fileDialog = new OpenFileDialog();
-            if (wakeupSongs.Contains(wplayer.URL))
+            if (!podPlayList.Contains(wplayer.URL))
                 fileDialog.InitialDirectory = System.IO.Path.GetDirectoryName(wplayer.URL);
             else
                 fileDialog.InitialDirectory = configWindow.podPathTextBox.Text;
@@ -234,9 +241,16 @@ namespace PodPlayer
         private void togglePlay()
         {
             if (wplayer.playState == WMPLib.WMPPlayState.wmppsPaused)
+            {
                 wplayer.controls.play();
+                volLbl.Content = "";
+            }
             else if (wplayer.playState == WMPLib.WMPPlayState.wmppsPlaying)
+            {
                 wplayer.controls.pause();
+                volLbl.Content = "PAUSED";
+                volLbl.Opacity = 1.0;
+            }
         }
 
         private void toggleMusic()
@@ -327,7 +341,7 @@ namespace PodPlayer
                     else if (volume < 100)
                         volume += 5;
                     wplayer.settings.volume = volume;
-                    volLbl.Content = "Volume = " + volume;
+                        volLbl.Content = "Volume = " + volume;
                     volLbl.Opacity = 1.0;
                     break;
                 case Key.Down:
@@ -399,7 +413,7 @@ namespace PodPlayer
                     return;
                 }
                 lastMediaURL = wplayer.currentMedia.sourceURL;
-                if (wakeupSongs.Contains(lastMediaURL))
+                if (!podPlayList.Contains(lastMediaURL))
                     statusLbl.Foreground = Brushes.LawnGreen;
                 else
                     statusLbl.Foreground = Brushes.Blue;
@@ -448,27 +462,30 @@ namespace PodPlayer
                 timesHeardLabel.Content = "Heard " + heardCount.ToString();
                 updateNext();
             }
-            if (wplayer.settings.volume < volume)
+            if (wplayer.playState == WMPLib.WMPPlayState.wmppsPlaying)
             {
-                int dv = 10;
-                try
+                if (wplayer.settings.volume < volume)
                 {
-                    dv = int.Parse(configWindow.fadeInSpeedTextBox.Text);
+                    int dv = 10;
+                    try
+                    {
+                        dv = int.Parse(configWindow.fadeInSpeedTextBox.Text);
+                    }
+                    catch
+                    {
+                    }
+                    int v = wplayer.settings.volume + dv;
+                    if (v > 100 || v < 0)
+                        wplayer.settings.volume = 50;
+                    else
+                        wplayer.settings.volume = v;
+                    volLbl.Content = "Volume = " + wplayer.settings.volume.ToString();
+                    volLbl.Opacity = 1.0;
                 }
-                catch
+                else if (volLbl.Opacity > 0.0)
                 {
+                    volLbl.Opacity -= 0.1;
                 }
-                int v = wplayer.settings.volume + dv;
-                if (v > 100 || v < 0)
-                    wplayer.settings.volume = 50;
-                else
-                    wplayer.settings.volume = v;
-                volLbl.Content = "Volume = " + wplayer.settings.volume.ToString();
-                volLbl.Opacity = 1.0;
-            }
-            else if (volLbl.Opacity > 0.0)
-            {
-                volLbl.Opacity -= 0.1;
             }
             Double rem_sec = wplayer.currentMedia.duration - wplayer.controls.currentPosition;
             lastMediaHeard = (rem_sec < 2);  //prevents record unless end is heard
@@ -531,7 +548,7 @@ namespace PodPlayer
                         //}
                         //else
                         //{
-                            lastHeard = tn[1];
+                        lastHeard = tn[1];
                         //}
                     }
                     else
@@ -557,7 +574,7 @@ namespace PodPlayer
             {
                 String urli1 = wplayer.currentPlaylist.get_Item(i + 1).sourceURL;
                 status_str = wplayer.currentPlaylist.get_Item(i + 1).name;
-                if (wakeupSongs.Contains(urli1))
+                if (!podPlayList.Contains(urli1))
                     nextMediaLbl.Foreground = Brushes.Green;
                 else
                     nextMediaLbl.Foreground = Brushes.Blue;
@@ -565,32 +582,33 @@ namespace PodPlayer
             playlistStatsLbl.Content = podsFoundCount.ToString() + " pod files, " + podsHeardCount + " heard";
             if (!stopAtNext)
             {
-                nextMediaLbl.Content = "Next:" + status_str;
+                nextMediaLbl.Content = "Next: " + status_str;
                 nextMediaLbl.FontSize = nextMediaLbl.ActualWidth / status_str.Length * 2;
                 if (nextMediaLbl.FontSize > nextMediaLbl.ActualHeight * 0.6)
                     nextMediaLbl.FontSize = nextMediaLbl.ActualHeight * 0.6;
             }
         }
 
-        private void loadWakeupSongs()
+        private List<string> loadMediaPaths(string fid)
         {
+            List<string> media_list = null;
             try
             {
                 // Read and show each line from the file. 
                 string line = "";
-                using (StreamReader sr = new StreamReader(configWindow.songListPathTextBox.Text))
+                using (StreamReader sr = new StreamReader(fid))
                 {
-                    wakeupSongs = new List<string>();
+                    media_list = new List<string>();
                     while ((line = sr.ReadLine()) != null)
                     {
                         int ms = line.IndexOf("<media src=");
                         if (ms < 0)
                             continue;
-                        string fid = line.Split('"')[1];  //Substring(line.IndexOf("=")+2);
-                        if (fid.Contains(".."))
-                            fid = fid.Replace("..", @"C:\Users\home\Music");
-                        if (File.Exists(fid))
-                            wakeupSongs.Add(fid);
+                        string mfid = line.Split('"')[1];  //Substring(line.IndexOf("=")+2);
+                        if (mfid.Contains(".."))
+                            mfid = mfid.Replace("..", @"C:\Users\home\Music");
+                        if (File.Exists(mfid))
+                            media_list.Add(mfid);
                     }
 
                 }
@@ -599,13 +617,29 @@ namespace PodPlayer
             {
                 System.Windows.MessageBox.Show("ERROR loading wakeup songs" + e.ToString());
             }
+            return media_list;
         }
 
         private void loadSongs()
         {
-            songPlayList = new List<string>();
-            loadWakeupSongs();
-            List<String> pl = new List<string>(wakeupSongs);
+            List<string> rwl = loadMediaPaths(configWindow.songListPathTextBox.Text);
+            if (rwl != null)
+            {
+                List<string> wl = orderSongList(rwl);
+                wakeupSong = wl[0];
+                songPlayList = wl;  //only used if tween song list fails to load
+            }
+            List<string> rtl = loadMediaPaths(configWindow.songListPathTextBox.Text);
+            if (rtl != null)
+                songPlayList = orderSongList(rtl);
+        }
+
+        private List<string> orderSongList(List<string> src)
+        {
+            if (src == null)
+                return null;
+            List<string> l = new List<string>();
+            List<String> pl = new List<string>(src);
             // suffle the song list
             pl = new List<String>(pl.OrderBy(item => rand.Next()));
             int fc = 0;
@@ -638,10 +672,11 @@ namespace PodPlayer
                     fc++;
                     if (rep < 0)
                         continue;
-                    songPlayList.Add(pc);
+                    l.Add(pc);
                 }
                 ri++;
             }
+            return l;
         }
 
         private void loadPodsHeard()
@@ -741,7 +776,7 @@ namespace PodPlayer
                                             podsFoundCount--;
                                         break;
                                     }
-                                    if (ri == 0 && rep == 0 && !wakeupSongs.Contains(ph))
+                                    if (ri == 0 && rep == 0 && podPlayList.Contains(ph))
                                         podsHeardCount++;
                                     rep++;
                                 }
@@ -761,7 +796,7 @@ namespace PodPlayer
             foreach (string ph in podsHeard)
             {
                 String[] tn = ph.Split(podsHeardSeperator);
-                if (wakeupSongs.Contains(tn[0]))  // don't delete songs
+                if (!podPlayList.Contains(tn[0]))  // don't delete songs
                     continue;
                 if (tn.Contains("DELETE"))
                 {
@@ -774,7 +809,7 @@ namespace PodPlayer
             foreach (string ph in podsHeard)
             {
                 String[] tn = ph.Split(podsHeardSeperator);
-                if (wakeupSongs.Contains(tn[0]))  // don't delete songs
+                if (!podPlayList.Contains(tn[0]))  // don't delete songs
                     continue;
                 if (tn.Contains("DELETE"))
                 {
