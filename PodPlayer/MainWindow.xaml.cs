@@ -237,6 +237,11 @@ namespace PodPlayer
 
         private void keyPressed(object sender, System.Windows.Input.KeyEventArgs e)
         {
+            if (stopAtNext && e.Key != Key.Escape)  // exit from stopAtNext mode
+            {
+                stopAtNext = false;
+                updateNext();
+            }
             switch (e.Key)
             {
                 case Key.Escape:
@@ -386,6 +391,8 @@ namespace PodPlayer
                     {
                         if (tn.Length > 1)
                         {
+                            if (tn[tn.Length - 1].StartsWith("SKIPPED"))
+                                continue;
                             if (tn[1].Length == 15)
                             {
                                 DateTime lh = DateTime.ParseExact(tn[1], "yyyyMMdd_HHmmss", null);
@@ -522,7 +529,9 @@ namespace PodPlayer
             List<String> pl = new List<string>(wakeupSongs);
             // suffle the song list
             pl = new List<String>(pl.OrderBy(item => rand.Next()));
-            for (int ri = 0; ri < MAX_REPEATS; ri++)
+            int fc = 0;
+            int ri = 0;
+            while(fc < pl.Count)
             {
                 foreach (String pc in pl)
                 {
@@ -539,17 +548,22 @@ namespace PodPlayer
                                     rep = -1;  // this one due for deletion
                                     break;
                                 }
+                                if (tn[tn.Length - 1].StartsWith("SKIPPED"))
+                                    continue;  
                                 rep++;
                             }
                         }
                     }
-                    if (rep < 0 || rep != ri)
+                    if(rep != ri)
+                      continue;
+                    fc++;
+                    if(rep < 0)
                         continue;
                     songPlayList.Add(pc);
                 }
+                ri++;
             }
         }
-
 
         private void loadPodsHeard()
         {

@@ -2,8 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="PodPlayer" Height="366" Width="574" Loaded="windowLoaded" KeyUp="keyPressed" >
-    <Grid  MouseMove="mouseMove">
-        <Rectangle Fill="Black" MouseDown="mouseDown" />
+    <Grid Background="Black" MouseDown="mouseDown" MouseMove="mouseMove">
         <Label Content="UnknownLabel" Foreground="Blue" Height="29" Margin="20,10,20,0" Name="statusLbl" VerticalAlignment="Top" MouseUp="selectSong"/>
         <Rectangle Height="28" Margin="20,51,20,0" Name="progressBkgRect" Stroke="Blue" Fill="Gray" VerticalAlignment="Top" />
         <Rectangle Height="28" HorizontalAlignment="Left" Margin="20,50,0,0" Name="progressRect" Stroke="Green" Fill="LightGreen" VerticalAlignment="Top" Width="47" />
