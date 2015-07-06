@@ -34,6 +34,7 @@ public partial class keySelectWindow : Window
             if (editable)
             {
                 ComboBox cb = new ComboBox();
+                cb.Name = act;
                 cb.Width = keyLbl.Width;
                 cb.SelectionChanged += actionKeyChanged;
                 loadKeyItems(cb);
@@ -82,7 +83,8 @@ public partial class keySelectWindow : Window
     {
         if (!fixSource)  //dont want changes triggering this at startup
             return;
-        //simpler just to set em all
+        keyAction.setKeyAction(((ComboBox)ob).Name, ((ComboBox)ob).SelectedItem.ToString());
+        /* originally it seemed simpler just to set em all
         foreach (StackPanel sp in keyStackPanel.Children)
         {
             if (((ComboBox)sp.Children[1]).SelectedItem != null)
@@ -92,6 +94,7 @@ public partial class keySelectWindow : Window
                 keyAction.setKeyAction(act, key);
             }
         }
+         */
     }
 
     void saveActionKeys(Object ob, RoutedEventArgs e)
