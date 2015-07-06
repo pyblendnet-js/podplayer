@@ -27,6 +27,7 @@ namespace PodPlayer
         private DateTime startTime;
         private List<string> wakeupSongs;
         private List<string> podsHeard;
+        private char[] podsHeardSeperator = ",".ToArray<char>();
         private List<string> podPlayList;
         private bool fixLayoutPending;
         private bool podMode;
@@ -127,6 +128,7 @@ namespace PodPlayer
             fixLayout();
         //    IntPtr wh = new WindowInteropHelper(this).Handle;
         //    SendMessage(wh, WM_SYSCOMMAND, (IntPtr)SC_MONITORPOWER, (IntPtr)MONITOR_OFF);
+            this.Focus();
         }
 
         private void mouseDown(object sender, MouseButtonEventArgs e)
@@ -157,20 +159,24 @@ namespace PodPlayer
                 case Key.W:
                     fullScreen(this.WindowState == WindowState.Normal);
                     break;
+                case Key.Tab:
+                    wplayer.controls.currentPosition += wplayer.currentMedia.duration / 10;
+                    wplayer.controls.play();
+                    break;
                 case Key.Left:
                     wplayer.controls.currentPosition = 0;
                     wplayer.controls.play();
                     break;
                 case Key.Right:
+                    recordPodsHeard(wplayer.currentMedia.sourceURL,"SKIPPED_AT=" + wplayer.controls.currentPosition.ToString("F0") + "Sec");
                     wplayer.controls.next();
-                    recordPodsHeard(lastMediaURL + " SKIPPED_AT=" + wplayer.controls.currentPosition.ToString("F0") + "Sec");
                     podMode = false;
                     break;
                 case Key.Delete:
                     if (podMode)
                     {
+                        recordPodsHeard(wplayer.currentMedia.sourceURL,"DELETE");
                         wplayer.controls.next();
-                        recordPodsHeard(lastMediaURL + " ***DELETE");
                     }
                     break;
                 case Key.H:  // just to test the heard function
@@ -213,6 +219,8 @@ namespace PodPlayer
             progressBkgRect.Height = progressRect.Height;
             remainderLbl.Height = progressRect.Height;
             remainderLbl.FontSize = progressRect.Height * 0.8;
+            lastHeardLabel.Margin = new Thickness(20, progressRect.Margin.Top + progressRect.Height, 0, 0);
+            timesHeardLabel.Margin = new Thickness(20, progressRect.Margin.Top + progressRect.Height, 0, 0);
             volLbl.Height = this.ActualHeight * 0.1;
             volLbl.Margin = new Thickness(20, progressRect.Margin.Top + progressRect.Height + 20, 20, 0);
             volLbl.FontSize = volLbl.Height * 0.6;
@@ -230,26 +238,57 @@ namespace PodPlayer
             if (fixLayoutPending)
                 fixLayout();
             podMode = podPlayList.Contains(wplayer.currentMedia.sourceURL);
-            if (podMode && lastMediaHeard)  //have fini music it seems
+            //if (podMode && lastMediaHeard)  //have fini music it seems
+            //{
+            //    if (!wplayer.currentMedia.sourceURL.Equals(lastMediaURL) || wplayer.playState == WMPLib.WMPPlayState.wmppsMediaEnded)
+            //    {
+            //        recordPodsHeard(lastMediaURL);
+            //    }
+            //}
+            if (!wplayer.currentMedia.sourceURL.Equals(lastMediaURL))  //lastMediaURL != wplayer.currentMedia.sourceURL)
             {
-                if (!wplayer.currentMedia.sourceURL.Equals(lastMediaURL) || wplayer.playState == WMPLib.WMPPlayState.wmppsMediaEnded)
-                {
-                    recordPodsHeard(lastMediaURL);
-                }
-            }
-            if (lastMediaURL != wplayer.currentMedia.sourceURL)
-            {
+                if (lastMediaHeard)
+                  recordPodsHeard(lastMediaURL);
                 lastMediaURL = wplayer.currentMedia.sourceURL;
+                if (wakeupSongs.Contains(lastMediaURL))
+                    statusLbl.Foreground = Brushes.Green;
+                else
+                    statusLbl.Foreground = Brushes.Blue;
                 string status_str = wplayer.playState.ToString().Substring(5) + ":" + wplayer.currentMedia.name + " = " + wplayer.currentMedia.duration.ToString("F0") + " Sec";
                 statusLbl.Content = status_str;
                 statusLbl.FontSize = statusLbl.ActualWidth / status_str.Length * 2;
                 if (statusLbl.FontSize > statusLbl.ActualHeight * 0.6)
                     statusLbl.FontSize = statusLbl.ActualHeight * 0.6;
+                // see how many times it has been heard etc
+                String lastHeard = "Never heard";
+                int heardCount = 0;
+                foreach (string ph in podsHeard)
+                {
+                    String[] tn = ph.Split(podsHeardSeperator);
+                    if (tn[0].Equals(lastMediaURL))
+                    {
+                        if (tn.Length > 1)
+                        {
+                            lastHeard = tn[1];
+                        }
+                        if(!tn[tn.Length-1].StartsWith("SKIPPED"))
+                          heardCount++;
+                    }
+                }
+                lastHeardLabel.Content = lastHeard;
+                timesHeardLabel.Content = "Heard " + heardCount.ToString();
                 status_str = "End of play list";  // assume end of list
+                nextMediaLbl.Foreground = Brushes.Red;
                 for (int i = 0; i < wplayer.currentPlaylist.count - 1; i++)
                 {
                     if (wplayer.controls.currentItem.sourceURL == wplayer.currentPlaylist.get_Item(i).sourceURL)
+                    {
                         status_str = wplayer.currentPlaylist.get_Item(i + 1).name;
+                        if (wakeupSongs.Contains(wplayer.currentPlaylist.get_Item(i + 1).sourceURL))
+                          nextMediaLbl.Foreground = Brushes.Green;
+                        else
+                          nextMediaLbl.Foreground = Brushes.Blue;
+                    }
                 }
                 nextMediaLbl.Content = status_str;
                 nextMediaLbl.FontSize = nextMediaLbl.ActualWidth / status_str.Length * 2;
@@ -389,10 +428,8 @@ namespace PodPlayer
                     podsHeard = new List<string>();
                     while ((ph = sr.ReadLine()) != null)
                     {
-                        String tn = ph;
-                        if (ph.EndsWith("***DELETE"))
-                            tn = ph.Substring(0, ph.Length - 9);
-                        if (File.Exists(tn))
+                        String[] tn = ph.Split(podsHeardSeperator);
+                        if (File.Exists(tn[0]))
                             podsHeard.Add(ph);  // leave suffix
                     }
                 }
@@ -403,14 +440,14 @@ namespace PodPlayer
             }
         }
 
-        private void recordPodsHeard(string fid)
+        private void recordPodsHeard(string fid, string suffix = "")
         {
             try
             {
                 // Write each directory name to a file. 
                 using (StreamWriter sw = new StreamWriter("podsHeard.txt", true))  //append
                 {
-                    sw.WriteLine(fid);
+                    sw.WriteLine(fid + "," + DateTime.Now.ToString("yyyyMMdd_hhmmdd") + "," + suffix);
                 }
             }
             catch (Exception e)
@@ -430,10 +467,8 @@ namespace PodPlayer
                 {
                     foreach (String ph in podsHeard)
                     {
-                        String tn = ph;
-                        if (ph.EndsWith("***DELETE"))
-                            tn = ph.Substring(0, ph.Length - 9);
-                        if (File.Exists(tn))
+                        String[] tn = ph.Split(podsHeardSeperator);
+                        if (File.Exists(tn[0]))
                             sw.WriteLine(ph);  //leave suffix
                     }
                 }
@@ -463,12 +498,16 @@ namespace PodPlayer
                         {
                             foreach (string ph in podsHeard)
                             {
-                                if (ph.Equals(pc + "***DELETE"))
+                                String[] tn = ph.Split(podsHeardSeperator);
+                                if (tn[0].Equals(pc))
                                 {
-                                    rep = -1;  // this one due for deletion
-                                    break;
+                                    if (tn.Contains("DELETE"))
+                                    {
+                                        rep = -1;  // this one due for deletion
+                                        break;
+                                    }
+                                    rep++;
                                 }
-                                if (ph.Equals(pc)) rep++;
                             }
                         }
                         if (rep < 0 || rep != ri)
