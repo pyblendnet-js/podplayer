@@ -8,8 +8,8 @@
         <Rectangle Height="28" HorizontalAlignment="Left" Margin="20,50,0,0" Name="progressRect" Stroke="Green" Fill="LightGreen" VerticalAlignment="Top" Width="47" />
         <Label Content="Remainder" Foreground="Yellow" Height="31" Margin="20,50,20,0" Name="remainderLbl" VerticalAlignment="Top" HorizontalContentAlignment="Right"/>
         <Label Content="00:00" Height="141" HorizontalAlignment="Center" Margin="72,85,0,0" Name="clockDial" VerticalAlignment="Top" Width="260" FontWeight="Bold" FontSize="96" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
-        <Button Content="Save podcasts heard which exist" Height="25" HorizontalAlignment="Left" Margin="366,300,0,0" Name="saveHeardBtn" VerticalAlignment="Bottom" Width="185" ToolTip="Removes those from list which are nolong stored locally" Visibility="hidden"/>
         <Label Content="next in playlist" Height="32" Foreground="Blue" Margin="20,0,20,20" Name="nextMediaLbl" VerticalAlignment="Bottom" VerticalContentAlignment="Center"/>
         <Label Content="Volume: 20" Height="24" Margin="20,80,20,0" Name="volLbl" VerticalAlignment="Top" HorizontalContentAlignment="Right" />
+        <Button Content="Config" Height="26" HorizontalAlignment="Right" Margin="485,295,0,0" Name="button1" VerticalAlignment="Bottom" Width="55" Click="showConfig" />
     </Grid>
 </Window>
