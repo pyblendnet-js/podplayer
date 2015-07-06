@@ -1,0 +1,51 @@
+<html>
+<head>
+<title>Customisable Keyboard Action for WPF application</title>
+</head>
+<body>
+<h1>Customisable Keyboard Action for WPF application</h1>
+<p>This article, which is my very first my first Code Page, describes a very simple solution for a WPF application where the user may need to customise which key causes a certain action.  While coded in C#, it should be easy to port to VisualBasic.  I have been programming professionally in vb with wpf for 5 years but I seem to have only scratched the surface of the dot net structure 
+<h2>Introduction</h2>
+<p>This solution was created while coding for a <a href="http://grapevine.com.au/media/wisteria/podplayer.html"> player</a> that I use late at night, and half asleep, to listen to previously downloaded podcast documentaries.  Ideally the program would respond to my thoughts or mood to reject or accept the randomly offered audio feeds - but lacking this technology, I need grope for the keyboard in the dark and press easily found keys to pause, rewind or reject the offered musings.
+<p>Having programmed suitable keys for my particular laptop, I realised that I might rather use a different older laptop with a completely different keyboard layout.  The previous key selection was nolonger suitable, so I needed a keyboard configurationi file.  I am sure this has been done before but I have yet to find it.  Equally, the searching for coding articles on HotKeys, C# and WPF finds code descriptions that I do not understand.
+<p>This solution primarily uses just the key.toString() method to allow the use of a dictionary, loaded at runtime from a configuration file, to select what action a key pressed will take.
+<p>Having moved into C# only recently, I would welcome any comments on how this code could be made even simpler.  My use of namespace and encapsulation could be improved for sure - but there seems to be a fine balance between robust code and understandable code that I have yet to find.
+<h2>Description</h2>
+<p>The code in KeyAction.cs contains a dictionary that is typically loaded from a file when the parent application runs:
+<pre>keyAction = new KeyActionClass("keyconfig.txt", actionList);</pre>
+<p>The "keyconfig.txt" is just a "=" seperated list of action/key descriptor pairs.  It could be hand entered but I have provided a keySelectWindow dialog for user key selection.
+<p>The actionList optional and is just a String array of possible action descriptors, but it is useful to provide place holders for actions that have not been assigned in the keyboard configeration file.  Interestingly, when I initially had actionList defined as just a static array and held in actionList as just a reference, a compile error would return inconsistent protection on the entire class - much time was lost on interpreting this error which I still don't completely understand.
+<p>Running the constructor for the KeyActionClass also loads keyList by interating through the System.Windows.Input.Key enumerated type looking for values that do not return an integer from the toString function.  If integer to Key conversion had not been possible, this method would have failed.
+<p>The keyAction class is next used in the keyEvent handler in the application code:
+
+<pre>   private void keyPressed(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            Console.WriteLine("Key pressed:" + e.Key.ToString());
+            String act = keyAction.getAction(e.Key);
+            ...
+            switch (act)
+            {
+                case "Action1":
+                  ...
+                  break;
+                case "Action2":
+                  ...
+                  break;
+</pre>
+<p>Here the action descriptors loaded from the key configeration file must match those in switch case statement, while the key descriptors in the configeration file must match the return from the e.Key.ToString() statement.
+<p>If it were not difficult to hand enter the exact descriptors, no further code would be necessary. My solution is a simple WPF dialog box coded in keySelectWindow.xaml and keySelectWindow.xaml.cs.
+<p>The following code will open this dialog box from your application:
+<pre>            keyWindow = new keySelectWindow(keyAction);
+            keyWindow.ShowDialog();
+            keyWindow.Focus();
+</pre>
+<p>In the attached example application podPlayer, this dialog is opened from within another configeration dialog (for editing mode) or from the mainwindow to provide a list of hotkeys.
+<p>The constructor for this window derived class loads a scrollable stack panel with action/key pairs.
+<p>The combobox change event handler, actionKeyChanged, originally accessed all of the stack panel childen and used the action label and key combo box to set the dictionary in KeyActionClass.  A simpler and more robust alternatively is to assign the action discriptor to the name of the combo box and use this to set the dictionary as:
+<pre>         keyAction.setKeyAction(((ComboBox)ob).Name, ((ComboBox)ob).SelectedItem.ToString());
+</pre>
+<p>The result looks something like this:</p>
+<Image Src="help2.png"  Alt="HotKey Dialog"/>
+
+</body>
+</html>

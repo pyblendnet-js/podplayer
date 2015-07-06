@@ -1,0 +1,17 @@
+Exit = Escape
+Pause = Space
+Full Screen = W
+Fast Forward = Tab
+Restart = Left
+Next = Right
+Delete = Delete
+Keep = Enter
+Configure = C
+Vol+ = Up
+Vol- = Down
+Help = OemQuestion
+HotKeys = K
+Print Keys = A
+Test Heard = T
+
+
